@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 import re
 import json
+import pandas as pd
 
 if (os.path.exists('model.joblib')):
     model = joblib.load('model.joblib')
@@ -12,11 +13,11 @@ else:
     model = create_model()
 
 class Laptop:
-    def __init__(self, screen_size, screen_resolution, ram, storage, storage_type, graphics, operating_system, weight):
-        # self.company = company
-        self.screen_size = screen_size
+    def __init__(self, company, cpu, inches, screen_resolution, ram, storage, storage_type, graphics, operating_system, weight):
+        self.company = company
+        self.inches = inches
         self.screen_resolution = screen_resolution
-        # self.cpu = cpu
+        self.cpu = cpu
         self.ram = ram
         self.storage = storage
         self.storage_type = storage_type
@@ -37,10 +38,11 @@ laptops =  soup.find_all('a', {'class' :'image-link'})
 #     siteHtml = session.get(f"https://bestbuy.com{laptop['href']}").text
 
 siteHtml = session.get(f"https://bestbuy.com{laptops[0]['href']}").text
+print(f"https://bestbuy.com{laptops[0]['href']}")
 soup_ = bs(siteHtml, 'html.parser')
 details = soup_.find_all('script', {'type' : 'application/json'})
 data = json.loads(details[2].text)
-
+print(details[2].text)
 for category in data['specifications']['categories']:
     print(f"Category: {category['displayName']}")
     for spec in category["specifications"]:
@@ -50,13 +52,13 @@ for category in data['specifications']['categories']:
         spec_definition = spec.get("definition", "No description")
 
         match spec_name:
-            # case "GPU Brand":
-            #     company = spec_value
+            case "Brand":
+                company = spec_value
             case "Screen Size":
-                screen_size = spec_value
+                inches = spec_value
             case "Screen Resolution":
                 screen_resolution = spec_value
-            case "Proccesor Model":
+            case "Processor Model":
                 cpu = spec_value
             case "System Memory (RAM)":
                 ram = spec_value
@@ -80,7 +82,28 @@ for category in data['specifications']['categories']:
  
     print("\n")
     
-laptop = Laptop(screen_size, screen_resolution, ram, storage, storage_type, graphics, operating_system, weight)   
+laptop = Laptop(company, cpu, inches, screen_resolution, ram, storage, storage_type, graphics, operating_system, weight)   
+
+def extract_number(text):
+    # Find all numeric parts and join them as a single number
+    match = re.search(r'\d+(\.\d+)?', text)
+    return int(float(match.group())) if match else None
+
+data_frame = pd.DataFrame({
+    'Company': [laptop.company],
+    'Inches': [extract_number(laptop.inches)],
+    'Resolution': [laptop.screen_resolution],
+    'Cpu': [laptop.cpu],
+    'Ram': [extract_number(laptop.ram)],
+    'Memory': [f"{laptop.storage} {laptop.storage_type}"],
+    'Gpu': [laptop.graphics],
+    'OpSys': [laptop.operating_system],
+    'Weight': [extract_number(laptop.weight)],
     
+})
+
+
+y_pred = model.predict(data_frame)
+print(f"Predicted Price: {y_pred}")
 
 

@@ -13,7 +13,8 @@ def create_model():
 
     data.drop('Product', axis=1, inplace=True)
     data.drop('TypeName', axis=1, inplace=True)
-    
+    data.drop('laptop_ID', axis=1, inplace=True)
+
     data['Resolution'] = data['ScreenResolution'].apply(lambda x : x[-10:])
     data.drop('ScreenResolution', axis=1, inplace=True)
 
@@ -27,7 +28,7 @@ def create_model():
     Y= data['Price_euros']
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-
+    print(X_test[:5])
     print(data.head(10))
 
     numeric_features = X.select_dtypes(exclude='object').columns
