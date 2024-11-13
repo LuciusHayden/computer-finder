@@ -27,7 +27,7 @@ def create_model():
     X= data.drop('Price_euros', axis=1)
     Y= data['Price_euros']
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
     print(X_test[:5])
     print(data.head(10))
 
