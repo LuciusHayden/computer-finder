@@ -11,6 +11,9 @@ import joblib
 def create_model():
     data = pd.read_csv('laptop_price.csv', encoding='iso-8859-15')
 
+    data.drop('Product', axis=1, inplace=True)
+    data.drop('TypeName', axis=1, inplace=True)
+    
     data['Resolution'] = data['ScreenResolution'].apply(lambda x : x[-10:])
     data.drop('ScreenResolution', axis=1, inplace=True)
 
