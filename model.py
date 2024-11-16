@@ -61,6 +61,9 @@ def create_model():
     print('Mean Absolute Error:', mean_absolute_error(Y_test, Y_pred))
     print('Mean Squared Error:', mean_squared_error(Y_test, Y_pred))
     print('R^2:', r2_score(Y_test, Y_pred))
+    
+    for col in categorical_features:
+        print(f"Unique categories in {col}:", X_train[col].unique())
 
 
     joblib.dump(pipe, 'model.joblib')

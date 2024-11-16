@@ -39,6 +39,53 @@ def format_resolution(resolution_text):
         return f"{width}x{height}"
     return None
 
+# simplify operating system
+# dataset doesnt contain Windows 11, so use windows 10
+def simplify_os(os_name):
+    if 'Windows 11 Home in S Mode' in os_name:
+        return 'Windows 10 S'
+    elif 'Windows 11' in os_name:
+        return 'Windows 10'
+    return os_name
+
+import re
+
+def simplify_cpu(cpu_name):
+    # Handle Intel CPUs
+    if "Intel" in cpu_name:
+        # Match "Core iX" or "Core Ultra X"
+        match = re.search(r"Core\s(?:Ultra\s)?(i[3579])", cpu_name)
+        if match:
+            core_type = match.group(1)
+            return f"Intel Core {core_type}"
+        elif "Pentium" in cpu_name:
+            return "Intel Pentium"
+        elif "Celeron" in cpu_name:
+            return "Intel Celeron"
+        elif "Atom" in cpu_name:
+            return "Intel Atom"
+        elif "Xeon" in cpu_name:
+            return "Intel Xeon"
+    
+    # Handle AMD CPUs
+    if "AMD" in cpu_name:
+        if "Ryzen" in cpu_name:
+            match = re.search(r"Ryzen\s(\d)", cpu_name)
+            if match:
+                ryzen_series = match.group(1)
+                return f"AMD Ryzen {ryzen_series}"
+        elif "A" in cpu_name:
+            match = re.search(r"A(\d+)", cpu_name)
+            if match:
+                a_series = match.group(1)
+                return f"AMD A{a_series}-Series"
+        elif "FX" in cpu_name:
+            return "AMD FX-Series"
+        elif "E-Series" in cpu_name:
+            return "AMD E-Series"
+    
+    # Return original if no match found
+    return cpu_name
 
 session = requests.Session()
 url = "https://www.bestbuy.com/site/all-laptops/pc-laptops/pcmcat247400050000.c?id=pcmcat247400050000"
@@ -93,19 +140,18 @@ for _laptop in laptops:
     data_frame = pd.DataFrame({
         'Company': [laptop.company.strip()],
         'Inches': [extract_number(laptop.inches)],
-        'Cpu': [laptop.cpu],
+        'Cpu': [simplify_cpu(laptop.cpu)],
         'Ram': [int(extract_number(laptop.ram))],
         'Gpu': [laptop.graphics], 
-        'OpSys': [laptop.operating_system],
+        'OpSys': [simplify_os(laptop.operating_system)],
         'Weight': [float(extract_number(laptop.weight))],
         'Resolution': [format_resolution(laptop.screen_resolution)],
-        'Memory': [f"{int(extract_number(laptop.storage))} {laptop.storage_type}"],
-        
+        'Memory': [f"{int(extract_number(laptop.storage))}GB {laptop.storage_type}"],
     })
 
     print(data_frame)
 
     y_pred = model.predict(data_frame)
-    print(f"Predicted Price: {y_pred} - https://bestbuy.com{_laptop['href']}")
+    print(f"Predicted Price: {y_pred * 1.06} - https://bestbuy.com{_laptop['href']}") # euros to usd
 
 
