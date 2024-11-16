@@ -1,0 +1,3 @@
+# Laptop Price Predictor 
+
+this is a laptop price predictor, and it should work after some tweaks so that it matches the dataset, however, the dataset is 4+ years old so I doubt its a valid predictor wether or not the input data is formatted correctly. In the future, if there is a more accurate dataset, this program could probably be altered slightly so that it works. Most of the hard work (the web scraping) is complete.
